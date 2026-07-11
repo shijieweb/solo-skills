@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # SOLO Skills Installer (macOS / Linux)
-# 一键安装所有 SOLO 适配技能
-# 用法: bash -c "$(curl -fsSL https://raw.githubusercontent.com/lcy362/solo-skills/main/install.sh)"
+# 一键安装 SOLO 适配技能
+# 用法:
+#   安装全部:  bash -c "$(curl -fsSL https://raw.githubusercontent.com/shijieweb/solo-skills/main/install.sh)"
+#   安装单个:  bash -c "$(curl -fsSL https://raw.githubusercontent.com/shijieweb/solo-skills/main/install.sh)" -s -- find-skills
 
 set -euo pipefail
 
@@ -9,10 +11,14 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 GRAY='\033[0;90m'
+RED='\033[0;31m'
 NC='\033[0m'
 
 echo -e "\n${CYAN}🧰 SOLO Skills Installer${NC}"
 echo -e "${CYAN}========================\n${NC}"
+
+# 解析参数：支持指定单个技能名
+SINGLE_SKILL="${1:-}"
 
 # 检测 SOLO 技能目录
 SKILLS_DIR="${HOME}/.trae-cn/skills"
@@ -30,28 +36,38 @@ TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 echo -e "\n${YELLOW}📥 下载技能仓库...${NC}"
-git clone --depth 1 https://github.com/lcy362/solo-skills.git "$TMP_DIR" 2>/dev/null
+git clone --depth 1 https://github.com/shijieweb/solo-skills.git "$TMP_DIR" 2>/dev/null
 
 if [ ! -d "$TMP_DIR" ]; then
     echo -e "${RED}❌ 仓库下载失败${NC}"
     exit 1
 fi
 
+# 确定要安装的技能列表
+if [ -n "$SINGLE_SKILL" ]; then
+    SKILL_LIST=("$SINGLE_SKILL")
+    echo -e "${CYAN}🔧 模式: 安装单个技能「$SINGLE_SKILL」${NC}\n"
+else
+    SKILL_LIST=("find-skills" "self-improving")
+    echo -e "${CYAN}🔧 模式: 安装全部技能${NC}\n"
+fi
+
 # 安装技能
 INSTALLED=()
-for SKILL_DIR in "find-skills" "self-improving"; do
+for SKILL_DIR in "${SKILL_LIST[@]}"; do
     SRC="$TMP_DIR/$SKILL_DIR"
     TARGET="$SKILLS_DIR/$SKILL_DIR"
-    
+
     if [ ! -d "$SRC" ]; then
+        echo -e "  ${RED}❌ $SKILL_DIR — 仓库中未找到此技能${NC}"
         continue
     fi
-    
+
     if [ -d "$TARGET" ]; then
         echo -e "  ${GRAY}⏭️  $SKILL_DIR — 已存在，跳过${NC}"
         continue
     fi
-    
+
     cp -r "$SRC" "$TARGET"
     INSTALLED+=("$SKILL_DIR")
     echo -e "  ${GREEN}✅ $SKILL_DIR — 安装成功${NC}"
@@ -65,4 +81,5 @@ for s in "${INSTALLED[@]}"; do
 done
 
 echo -e "\n${CYAN}🎉 安装完成！重启 SOLO 会话后技能生效。${NC}"
-echo -e "${YELLOW}   提示：运行 '检查所有技能更新' 可以检查新版本。\n${NC}"
+echo -e "${YELLOW}   提示：运行 '检查所有技能更新' 可以检查新版本。${NC}"
+echo -e "${YELLOW}   云端环境：部分技能依赖 MCP，云端若缺失 MCP 会自动降级运行。\n${NC}"

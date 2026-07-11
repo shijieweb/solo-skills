@@ -1,6 +1,12 @@
 # SOLO Skills Installer (Windows)
-# 一键安装所有 SOLO 适配技能
-# 用法: irm https://raw.githubusercontent.com/lcy362/solo-skills/main/install.ps1 | iex
+# 一键安装 SOLO 适配技能
+# 用法:
+#   安装全部:  irm https://raw.githubusercontent.com/shijieweb/solo-skills/main/install.ps1 | iex
+#   安装单个:  $skill = "find-skills"; iex "& { $(irm https://raw.githubusercontent.com/shijieweb/solo-skills/main/install.ps1) } -SkillName $skill"
+
+param(
+    [string]$SkillName = ""   # 留空 = 安装全部，指定技能名 = 安装单个
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -24,6 +30,15 @@ if (-not (Test-Path $skillsDir)) {
 
 Write-Color "📂 目标安装目录: $skillsDir" "Green"
 
+# 确定安装模式
+if ($SkillName) {
+    $skillList = @($SkillName)
+    Write-Color "🔧 模式: 安装单个技能「$SkillName」`n" "Cyan"
+} else {
+    $skillList = @("find-skills", "self-improving")
+    Write-Color "🔧 模式: 安装全部技能`n" "Cyan"
+}
+
 # 创建临时目录
 $tmpDir = Join-Path $env:TEMP "solo-skills-install"
 if (Test-Path $tmpDir) { Remove-Item $tmpDir -Recurse -Force }
@@ -31,59 +46,45 @@ New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
 
 try {
     # 克隆仓库
-    Write-Color "`n📥 下载技能仓库..." "Yellow"
-    git clone --depth 1 https://github.com/lcy362/solo-skills.git "$tmpDir" 2>&1 | Out-Null
-    
+    Write-Color "📥 下载技能仓库..." "Yellow"
+    git clone --depth 1 https://github.com/shijieweb/solo-skills.git "$tmpDir" 2>&1 | Out-Null
+
     if (-not (Test-Path $tmpDir)) {
         throw "仓库下载失败"
     }
-    
+
     # 安装技能
     $installed = @()
-    $skills = Get-ChildItem -Path $tmpDir -Directory | Where-Object {
-        Test-Path (Join-Path $_.FullName "SKILL.md")
-    }
-    
-    foreach ($skill in $skills) {
-        $targetDir = Join-Path $skillsDir $skill.Name
-        
-        if (Test-Path $targetDir) {
-            Write-Color "  ⏭️  $($skill.Name) — 已存在，跳过" "Gray"
+    foreach ($name in $skillList) {
+        $src = Join-Path $tmpDir $name
+        $target = Join-Path $skillsDir $name
+
+        if (-not (Test-Path $src)) {
+            Write-Color "  ❌ $name — 仓库中未找到此技能" "Red"
             continue
         }
-        
-        Copy-Item -Path $skill.FullName -Destination $targetDir -Recurse -Force
-        $installed += $skill.Name
-        Write-Color "  ✅ $($skill.Name) — 安装成功" "Green"
-    }
-    
-    # 纯净安装只有一个技能目录
-    if ($installed.Count -eq 0) {
-        # 可能是克隆成功但技能在子目录
-        $skillDirs = @("find-skills", "self-improving")
-        foreach ($name in $skillDirs) {
-            $src = Join-Path $tmpDir $name
-            $target = Join-Path $skillsDir $name
-            if ((Test-Path $src) -and (-not (Test-Path $target))) {
-                Copy-Item -Path $src -Destination $target -Recurse -Force
-                $installed += $name
-                Write-Color "  ✅ $name — 安装成功" "Green"
-            } elseif (Test-Path $target) {
-                Write-Color "  ⏭️  $name — 已存在，跳过" "Gray"
-            }
+
+        if (Test-Path $target) {
+            Write-Color "  ⏭️  $name — 已存在，跳过" "Gray"
+            continue
         }
+
+        Copy-Item -Path $src -Destination $target -Recurse -Force
+        $installed += $name
+        Write-Color "  ✅ $name — 安装成功" "Green"
     }
-    
+
     Write-Color "`n📊 安装摘要:" "Cyan"
     Write-Color "   目录: $skillsDir" "White"
     Write-Color "   安装: $($installed.Count) 个技能" "Green"
     foreach ($s in $installed) {
         Write-Color "     ✅ $s" "Green"
     }
-    
+
     Write-Color "`n🎉 安装完成！重启 SOLO 会话后技能生效。" "Cyan"
-    Write-Color "   提示：运行 '检查所有技能更新' 可以检查新版本。`n" "Yellow"
-    
+    Write-Color "   提示：运行 '检查所有技能更新' 可以检查新版本。" "Yellow"
+    Write-Color "   云端环境：部分技能依赖 MCP，云端若缺失 MCP 会自动降级运行。`n" "Yellow"
+
 } catch {
     Write-Color "❌ 安装失败: $_" "Red"
     exit 1
