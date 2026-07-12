@@ -122,6 +122,17 @@ solo-skills/
 
 ---
 
+## 📌 MCP 操作规则
+
+> **本仓库是技能源仓库，每次通过 MCP 执行文件操作后，必须立即返回给用户：**
+> 1. **文件链接**（GitHub 页面链接）— 用户可直接点击打开阅读
+> 2. **操作摘要**（创建了什么 / 修改了什么 / 删除了什么）— 简明扼要
+>
+> 格式示例：
+> ✅ 已更新 [README.md](https://github.com/shijieweb/solo-skills/blob/main/README.md) — 补充了 MCP 操作规则
+
+---
+
 ## 🛠️ 本地开发
 
 详见 [docs/skill-dev.md](docs/skill-dev.md)。
