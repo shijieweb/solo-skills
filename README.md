@@ -25,6 +25,7 @@
 |------|------|------|------|
 | 🔍 **find-skills** | v2.0.0-solo | 场景驱动+关键词双模式技能发现引擎，6 层联合搜索，11 级优先级排序 | 基于 SkillHub 社区版适配 |
 | 🧠 **self-improving** | v1.2.16-solo | Agent 自我改进框架：HOT/WARM/COLD 记忆分层、纠错学习、Self-Reflection、自动晋升/降级 | 基于 ivangdavila/self-improving 适配 |
+| 📥 **douyin-xiazai** | v1.0.0-solo | 抖音无水印视频下载与去水印工具，浏览器提取+curl下载，支持视频贴纸水印去除 | 原创 |
 
 ---
 
@@ -96,6 +97,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/shijieweb/solo-skills/ma
 |------|-------------|-------------|
 | **find-skills** | ❌ 不依赖 | 完全正常运行，所有 6 层搜索通道正常 |
 | **self-improving** | ❌ 不依赖 | 完全正常运行，记忆存储在本地文件，无需 MCP |
+| **douyin-xiazai** | ⚠️ 依赖 MCP Browser | 下载功能需 MCP browser 提取视频 URL；去水印仅需 OpenCV + ffmpeg |
 
 **详细解释：**
 
@@ -126,6 +128,9 @@ solo-skills/
 │   ├── SKILL.md           #   技能定义（核心）
 │   ├── _meta.json         #   元数据
 │   └── references/        #   参考文档
+├── douyin-xiazai/         # 📥 抖音无水印下载
+│   ├── SKILL.md           #   技能定义（核心）
+│   └── _meta.json         #   元数据
 ├── docs/
 │   └── skill-dev.md       #   SOLO 技能适配开发指南
 ├── install.sh             #   macOS/Linux 安装脚本

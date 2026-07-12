@@ -35,7 +35,7 @@ if ($SkillName) {
     $skillList = @($SkillName)
     Write-Color "🔧 模式: 安装单个技能「$SkillName」`n" "Cyan"
 } else {
-    $skillList = @("find-skills", "self-improving")
+    $skillList = @("find-skills", "self-improving", "douyin-xiazai")
     Write-Color "🔧 模式: 安装全部技能`n" "Cyan"
 }
 

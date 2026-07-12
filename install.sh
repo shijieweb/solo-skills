@@ -48,7 +48,7 @@ if [ -n "$SINGLE_SKILL" ]; then
     SKILL_LIST=("$SINGLE_SKILL")
     echo -e "${CYAN}🔧 模式: 安装单个技能「$SINGLE_SKILL」${NC}\n"
 else
-    SKILL_LIST=("find-skills" "self-improving")
+    SKILL_LIST=("find-skills" "self-improving" "douyin-xiazai")
     echo -e "${CYAN}🔧 模式: 安装全部技能${NC}\n"
 fi
 
