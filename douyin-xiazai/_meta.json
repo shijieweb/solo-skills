@@ -3,5 +3,12 @@
   "slug": "solo-douyin-xiazai",
   "version": "1.0.0-solo",
   "publishedAt": 1783853600000,
-  "homepage": "https://github.com/shijieweb/solo-skills/tree/main/douyin-xiazai"
+  "homepage": "https://github.com/shijieweb/solo-skills/tree/main/douyin-xiazai",
+  "source": {
+    "type": "original",
+    "url": "",
+    "author": "SOLO Skills Team",
+    "license": "MIT",
+    "upstreamVersion": ""
+  }
 }
