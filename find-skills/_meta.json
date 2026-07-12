@@ -3,5 +3,12 @@
   "slug": "solo-find-skills",
   "version": "2.0.0-solo",
   "publishedAt": 1783787000000,
-  "homepage": "https://github.com/shijieweb/solo-skills/tree/main/find-skills"
+  "homepage": "https://github.com/shijieweb/solo-skills/tree/main/find-skills",
+  "source": {
+    "type": "adapted",
+    "url": "https://github.com/anthropics/skills-market",
+    "author": "SkillHub Community",
+    "license": "Apache-2.0",
+    "upstreamVersion": "v1.x"
+  }
 }
