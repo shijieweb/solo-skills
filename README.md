@@ -57,12 +57,16 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/shijieweb/solo-skills/ma
 
 ## ☁️ 云端安装（Web/Cloud SOLO）
 
-**云端（类 Linux 环境）安装单个技能:**
+**一句话安装单个技能 — 直接告诉 AI：**
+> 去 GitHub `shijieweb/solo-skills` 安装 **find-skills** 这个技能
+
+或者用一键命令：
+
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/shijieweb/solo-skills/main/install.sh)" -s -- find-skills
 ```
 
-**云端安装全部技能:**
+**安装全部技能:**
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/shijieweb/solo-skills/main/install.sh)"
 ```
