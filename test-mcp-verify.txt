@@ -1,0 +1,3 @@
+MCP GitHub Repos Manager 连接验证
+时间: 2026-07-12
+状态: ✅ 读写正常
