@@ -1,0 +1,14 @@
+{
+  "ownerId": "solo-skills",
+  "slug": "solo-agentmemory",
+  "version": "1.0.0-solo",
+  "publishedAt": 1750953600,
+  "homepage": "https://github.com/shijieweb/solo-skills/tree/main/agentmemory",
+  "source": {
+    "type": "original",
+    "url": "",
+    "author": "SOLO Agent (Owen)",
+    "license": "MIT",
+    "upstreamVersion": ""
+  }
+}
