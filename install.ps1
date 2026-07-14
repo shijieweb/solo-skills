@@ -1,107 +1,94 @@
-# Solo Skills Manager - All-Skills Installer for Windows
-# ════════════════════════════════════════════════════════
-# One-click to install ALL skills currently in this repo.
-# Run: powershell -ExecutionPolicy Bypass -File install.ps1
-# Output: Each skill lands in %USERPROFILE%\.trae-cn\skills\<slug>
-# ════════════════════════════════════════════════════════
+# SOLO Skills Installer (Windows)
+# 一键安装 SOLO 适配技能
+# 用法:
+#   安装全部:  irm https://raw.githubusercontent.com/shijieweb/solo-skills/main/install.ps1 | iex
+#   安装单个:  $skill = "find-skills"; iex "& { $(irm https://raw.githubusercontent.com/shijieweb/solo-skills/main/install.ps1) } -SkillName $skill"
+
+param(
+    [string]$SkillName = ""   # 留空 = 安装全部，指定技能名 = 安装单个
+)
 
 $ErrorActionPreference = "Stop"
-$ProgressPreference = "SilentlyContinue"
 
-$Base = "$env:USERPROFILE\.trae-cn\skills"
-$Repo  = "https://github.com/shijieweb/solo-skills/archive/refs/heads/main.zip"
-$Temp  = "$env:TEMP\solo-skills-main.zip"
-$Extract = "$env:TEMP\solo-skills-main"
-
-# ── Skill list (keep in sync with README.md 技能表) ──
-# All skills are downloaded together; set $skillList to filter:
-$skillList = @("find-skills", "self-improving", "douyin-xiazai", "agentmemory")
-
-Write-Host "🚀 Solo Skills Manager - All-Skills Installer" -ForegroundColor Cyan
-Write-Host "=============================================" -ForegroundColor Cyan
-Write-Host ""
-
-# 1. Download the whole repo as zip
-Write-Host "[1/3] Downloading latest solo-skills from GitHub..." -ForegroundColor Yellow
-try {
-    Invoke-WebRequest -Uri $Repo -OutFile $Temp -UseBasicParsing
-    Write-Host "      ✅ Downloaded successfully" -ForegroundColor Green
-} catch {
-    Write-Host "      ❌ Download failed: $_" -ForegroundColor Red
-    exit 1
+# 颜色函数
+function Write-Color($Text, $Color = "White") {
+    Write-Host $Text -ForegroundColor $Color
 }
 
-# 2. Extract zip
-Write-Host "[2/3] Extracting..." -ForegroundColor Yellow
-try {
-    if (Test-Path $Extract) { Remove-Item -Recurse -Force $Extract }
-    Expand-Archive -Path $Temp -DestinationPath "$env:TEMP" -Force
-    Write-Host "      ✅ Extracted to $Extract" -ForegroundColor Green
-} catch {
-    Write-Host "      ❌ Extraction failed: $_" -ForegroundColor Red
-    exit 1
+Write-Color "`n🧰 SOLO Skills Installer" "Cyan"
+Write-Color "========================`n" "Cyan"
+
+# 检测 SOLO 技能目录
+$soloBase = Join-Path $env:LOCALAPPDATA "../.trae-cn"
+$skillsDir = Join-Path $soloBase "skills"
+
+if (-not (Test-Path $skillsDir)) {
+    Write-Color "⚠️ 未找到 SOLO 技能目录: $skillsDir" "Yellow"
+    $skillsDir = Read-Host "请输入 SOLO 技能目录路径 (默认: $skillsDir)"
+    if (-not $skillsDir) { $skillsDir = Join-Path $env:USERPROFILE ".trae-cn/skills" }
 }
 
-# 3. Copy skills
-Write-Host "[3/3] Installing skills..." -ForegroundColor Yellow
-$installed = @()
-$skipped   = @()
+Write-Color "📂 目标安装目录: $skillsDir" "Green"
 
-# First pass: if $skillList is non-empty, install only those
-if ($skillList.Count -gt 0) {
-    foreach ($slug in $skillList) {
-        $src = Join-Path $Extract "solo-skills-main\$slug"
-        $dst = Join-Path $Base $slug
-        if (Test-Path $src) {
-            Write-Host "      📦 $slug ..." -NoNewline
-            if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
-            Copy-Item -Recurse $src $dst
-            Write-Host " ✅" -ForegroundColor Green
-            $installed += $slug
-        } else {
-            Write-Host "      ⚠️ $slug not found in repo" -ForegroundColor DarkYellow
-            $skipped += $slug
-        }
-    }
+# 确定安装模式
+if ($SkillName) {
+    $skillList = @($SkillName)
+    Write-Color "🔧 模式: 安装单个技能「$SkillName」`n" "Cyan"
 } else {
-    # No filter → install all top-level skill directories
-    Get-ChildItem "$Extract\solo-skills-main" -Directory | ForEach-Object {
-        $slug = $_.Name
-        # Skip non-skill directories
-        if ($slug -in @(".github", "_shared", "references", "assets", "node_modules")) { return }
-        $src = $_.FullName
-        $dst = Join-Path $Base $slug
-        Write-Host "      📦 $slug ..." -NoNewline
-        if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
-        Copy-Item -Recurse $src $dst
-        Write-Host " ✅" -ForegroundColor Green
-        $installed += $slug
+    $skillList = @("find-skills", "douyin-xiazai", "agentmemory")
+    Write-Color "🔧 模式: 安装全部技能`n" "Cyan"
+}
+
+# 创建临时目录
+$tmpDir = Join-Path $env:TEMP "solo-skills-install"
+if (Test-Path $tmpDir) { Remove-Item $tmpDir -Recurse -Force }
+New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
+
+try {
+    # 克隆仓库
+    Write-Color "📥 下载技能仓库..." "Yellow"
+    git clone --depth 1 https://github.com/shijieweb/solo-skills.git "$tmpDir" 2>&1 | Out-Null
+
+    if (-not (Test-Path $tmpDir)) {
+        throw "仓库下载失败"
     }
+
+    # 安装技能
+    $installed = @()
+    foreach ($name in $skillList) {
+        $src = Join-Path $tmpDir $name
+        $target = Join-Path $skillsDir $name
+
+        if (-not (Test-Path $src)) {
+            Write-Color "  ❌ $name — 仓库中未找到此技能" "Red"
+            continue
+        }
+
+        if (Test-Path $target) {
+            Write-Color "  ⏭️  $name — 已存在，跳过" "Gray"
+            continue
+        }
+
+        Copy-Item -Path $src -Destination $target -Recurse -Force
+        $installed += $name
+        Write-Color "  ✅ $name — 安装成功" "Green"
+    }
+
+    Write-Color "`n📊 安装摘要:" "Cyan"
+    Write-Color "   目录: $skillsDir" "White"
+    Write-Color "   安装: $($installed.Count) 个技能" "Green"
+    foreach ($s in $installed) {
+        Write-Color "     ✅ $s" "Green"
+    }
+
+    Write-Color "`n🎉 安装完成！重启 SOLO 会话后技能生效。" "Cyan"
+    Write-Color "   提示：运行 '检查所有技能更新' 可以检查新版本。" "Yellow"
+    Write-Color "   云端环境：部分技能依赖 MCP，云端若缺失 MCP 会自动降级运行。`n" "Yellow"
+
+} catch {
+    Write-Color "❌ 安装失败: $_" "Red"
+    exit 1
+} finally {
+    # 清理临时文件
+    if (Test-Path $tmpDir) { Remove-Item $tmpDir -Recurse -Force -ErrorAction SilentlyContinue }
 }
-
-# 4. Cleanup
-Remove-Item $Temp -Force -ErrorAction SilentlyContinue
-Remove-Item $Extract -Recurse -Force -ErrorAction SilentlyContinue
-
-# 5. Summary
-Write-Host ""
-Write-Host "=============================================" -ForegroundColor Cyan
-Write-Host "  ✅ Installed: $($installed.Count) skills" -ForegroundColor Green
-if ($installed.Count -gt 0) {
-    Write-Host "     $($installed -join ', ')" -ForegroundColor Green
-}
-
-# ── MCP Server Guidance ──
-Write-Host ""
-Write-Host "📡 MCP Server Setup (for skills with MCP):" -ForegroundColor Magenta
-Write-Host "   Skills requiring MCP servers need additional configuration."
-Write-Host "   See each skill's references/install-guide.md for details."
-Write-Host ""
-
-# ── Quick-install hints ──
-if ($installed -contains "agentmemory") {
-    Write-Host "🧠 agentmemory: MCP Server detected!" -ForegroundColor Magenta
-    Write-Host "   Run for full setup: Get-Content $env:USERPROFILE\.trae-cn\skills\agentmemory\references\install-guide.md" -ForegroundColor DarkGray
-}
-
-Write-Host "Done! 🎉" -ForegroundColor Cyan

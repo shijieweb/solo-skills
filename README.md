@@ -25,7 +25,6 @@
 | 技能 | 版本 | 说明 | 来源 |
 |------|------|------|------|
 | 🔍 **find-skills** | v2.0.0-solo | 场景驱动+关键词双模式技能发现引擎，6 层联合搜索，11 级优先级排序 | 基于 SkillHub 社区版适配 |
-| 🧠 **self-improving** | v1.2.16-solo | Agent 自我改进框架：HOT/WARM/COLD 记忆分层、纠错学习、Self-Reflection、自动晋升/降级 | 基于 ivangdavila/self-improving 适配 |
 | 📥 **douyin-xiazai** | v1.0.0-solo | 抖音无水印视频下载与去水印工具，浏览器提取+curl下载，支持视频贴纸水印去除 | 原创 |
 | 🧬 **agentmemory** | v1.0.0-solo | SOLO Agent 自我进化记忆体系：agentmemory MCP + Evolution Engine + 运维守护脚本 + 记忆协议文档，三阶八柱架构驱动自主进化 | 原创 |
 
